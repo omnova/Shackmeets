@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace Shackmeets.Models
 {
@@ -16,7 +17,10 @@ namespace Shackmeets.Models
     public int RsvpTypeId { get; set; }
     public int NumAttendees { get; set; }
 
+    [JsonIgnore]
     public Meet Meet { get; set; }
+
+    [JsonIgnore]
     public User User { get; set; }
   }
 }

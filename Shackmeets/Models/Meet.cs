@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,10 @@ namespace Shackmeets.Models
     public string OrganizerUsername { get; set; }
     public DateTime EventDate { get; set; }
 
+    [JsonIgnore]
     public DateTime TimestampCreate { get; set; }
+
+    [JsonIgnore]
     public DateTime? TimestampChange { get; set; }
 
     public string LocationName { get; set; }
@@ -24,11 +28,16 @@ namespace Shackmeets.Models
     public decimal LocationLatitude { get; set; }
     public decimal LocationLongitude { get; set; }
 
+    [JsonIgnore]
     public bool WillPostAnnouncement { get; set; }
+
+    [JsonIgnore]
     public DateTime? LastAnnouncementPostDate { get; set; }
 
+    [JsonIgnore]
     public bool IsDeleted { get; set; }
 
+    [JsonIgnore]
     public User Organizer { get; set; }
 
     public List<Rsvp> Rsvps { get; set; }
