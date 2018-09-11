@@ -54,7 +54,7 @@ namespace Shackmeets.Tests
     {
       var chatty = new ChattyWrapper();
 
-      bool result = chatty.SendMessage(username, password, "omnova", "subject", "body");
+      bool result = chatty.SendMessage(username, password, username, "subject", "body");
 
       Assert.IsTrue(result);
     }

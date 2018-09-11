@@ -26,6 +26,7 @@ namespace Shackmeets
     {
       services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+      // Test connection
       var connection = @"Server=(localdb)\MSSQLLocalDB;Database=ShackmeetsDev;Trusted_Connection=True;ConnectRetryCount=0";
 
       services.AddDbContext<ShackmeetsDbContext>(options => options.UseSqlServer(connection));
