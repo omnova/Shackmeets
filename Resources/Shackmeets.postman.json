@@ -1,0 +1,167 @@
+{
+	"info": {
+		"_postman_id": "c4cbe484-c0b9-471d-8477-66d1980dc49a",
+		"name": "Shackmeets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://localhost:44386/api/LogIn?username=omnova&password=wrong",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "https://localhost:44386/api/LogIn?username=omnova&password=wrong",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44386",
+					"path": [
+						"api",
+						"LogIn"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "omnova"
+						},
+						{
+							"key": "password",
+							"value": "wrong"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:44386/api/LogOut?username=omnova",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "https://localhost:44386/api/LogOut?username=omnova",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44386",
+					"path": [
+						"api",
+						"LogOut"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "omnova"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:44386/api/GetShackmeets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "https://localhost:44386/api/GetShackmeets",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44386",
+					"path": [
+						"api",
+						"GetShackmeets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:44386/api/Rsvp",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "meetId",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "omnova",
+							"type": "text"
+						},
+						{
+							"key": "rsvpTypeId",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "numAttendees",
+							"value": "10",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://localhost:44386/api/Rsvp",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44386",
+					"path": [
+						"api",
+						"Rsvp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://localhost:44386/api/CreateShackmeet",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"MYSHACKMEET\",\n    \"description\": \"DESC\",\n    \"organizerUsername\": \"omnova\",\n    \"eventDate\": \"2018-09-14T00:00:00\",\n    \"locationName\": null,\n    \"locationAddress\": null,\n    \"locationState\": null,\n    \"locationCountry\": null,\n    \"locationLatitude\": 0,\n    \"locationLongitude\": 0\n}"
+				},
+				"url": {
+					"raw": "https://localhost:44386/api/CreateShackmeet",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44386",
+					"path": [
+						"api",
+						"CreateShackmeet"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
