@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,7 @@ namespace Shackmeets.Controllers
       this.dbContext = context;
     }
 
-    [HttpGet("[action]")]
+    [HttpPost("[action]")]
     public object Login(string username, string password)
     {
       try
@@ -73,7 +74,8 @@ namespace Shackmeets.Controllers
       return new { result = "error" };
     }
 
-    [HttpGet("[action]")]
+    [HttpPost("[action]")]
+    [Authorize]
     public object LogOut(string username)
     {
       try
@@ -104,7 +106,12 @@ namespace Shackmeets.Controllers
     {
       try
       {
-        return this.dbContext.Meets.AsNoTracking().Where(m => m.EventDate >= DateTime.Today).ToList();
+        return this.dbContext
+          .Meets
+          .AsNoTracking()
+          .Where(m => m.EventDate >= DateTime.Today)
+          .Include(m => m.Rsvps)
+          .ToList();
       }
       catch
       {
@@ -144,9 +151,68 @@ namespace Shackmeets.Controllers
       }
     }
 
-    public void Rsvp(int meetId, int userId)
+    [HttpPost("[action]")]
+    [Authorize]
+    public object CreateShackmeet([FromBody] Meet meet)
     {
+      try
+      {
+        // Implement PRL
+        // Validate fields
+        // Verify token
 
+        return new { result = "not implemented" };
+      }
+      catch
+      {
+        // Log error
+
+        return new { result = "error" };
+      }
+    }
+
+    [HttpPost("[action]")]
+    [Authorize]
+    public object Rsvp(int meetId, string username, int rsvpTypeId, int numAttendees)
+    {
+      try
+      {
+        // verify user token
+        // verify user exists
+        // verify meet exists
+
+        var rsvp = this.dbContext.Rsvps.FirstOrDefault(r => r.MeetId == meetId && r.Username == username);
+
+        if (rsvp != null)
+        {
+          // Existing RSVP
+          this.dbContext.Rsvps.Attach(rsvp);
+        }
+        else
+        {
+          // New RSVP
+          rsvp = new Rsvp
+          {
+            MeetId = meetId,
+            Username = username
+          };
+
+          this.dbContext.Add(rsvp);
+        }
+
+        rsvp.RsvpTypeId = rsvpTypeId;
+        rsvp.NumAttendees = numAttendees;
+
+        this.dbContext.SaveChanges();
+
+        return new { result = "success" };
+      }
+      catch
+      {
+        // Log error
+
+        return new { result = "error" };
+      }
     }
     
     public void ResendNotification()
