@@ -7,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Shackmeets.Models;
+using Shackmeets.Dtos;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using System.Text;
+using System.Security.Claims;
 
 namespace Shackmeets.Controllers
 {
@@ -14,90 +20,86 @@ namespace Shackmeets.Controllers
   public class ApiController : Controller
   {
     private ShackmeetsDbContext dbContext = null;
+    private AppSettings appSettings = null;
 
-    public ApiController(ShackmeetsDbContext context)
+    public ApiController(ShackmeetsDbContext context, IOptions<AppSettings> appSettings)
     {
       this.dbContext = context;
+      this.appSettings = appSettings.Value;
     }
 
     [HttpPost("[action]")]
-    public object Login(string username, string password)
+    public IActionResult Login([FromBody] UserDto userDto)
     {
       try
       {
+        // Change to DI service? Seems overkill
         var chatty = new ChattyWrapper();
 
-        var isValid = chatty.VerifyCredentials(username, password);
+        var isValid = chatty.VerifyCredentials(userDto.Username, userDto.Password);
 
-        if (isValid)
+        if (!isValid)
         {
-          var user = this.dbContext.Users.FirstOrDefault(u => u.Username == username);
+          return BadRequest(new { message = "Username or password is incorrect" });
+        }
 
-          if (user == null)
+        var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
+
+        if (user == null)
+        {
+          // New user, create a user record
+          user = new User
           {
-            // New user, create a user record
-            user = new User
-            {
-              Username = username
-            };
+            Username = userDto.Username
+          };
 
-            this.dbContext.Users.Add(user);
-          }
-          else
-          {
-            // Existing user
-            if (!string.IsNullOrEmpty(user.SessionKey))
-            {
-              // Return the existing token
-              return new { result = "success", token = user.SessionKey };
-            }
-
-            this.dbContext.Users.Attach(user);
-          }
-
-          user.SessionKey = Guid.NewGuid().ToString();
-
+          this.dbContext.Users.Add(user);            
           this.dbContext.SaveChanges();
+        }
 
-          return new { result = "success", token = user.SessionKey };
-        }
-        else
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-          return new { result = "failure" };
-        }
+          Subject = new ClaimsIdentity(new Claim[]
+            {
+                  new Claim(ClaimTypes.Name, user.Username)
+            }),
+          Expires = DateTime.UtcNow.AddDays(30),
+          SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var tokenString = tokenHandler.WriteToken(token);
+
+        // return basic user info (without password) and token to store client side
+        return Ok(new
+        {
+          Username = user.Username,
+          Token = tokenString
+        });        
       }
       catch
       {
         // Log error
-      }
 
-      return new { result = "error" };
+        return BadRequest(new { message = "An error occurred" });
+      }
     }
 
     [HttpPost("[action]")]
     [Authorize]
-    public object LogOut(string username)
+    public IActionResult LogOut(string username)
     {
       try
       {
-        var user = this.dbContext.Users.FirstOrDefault(u => u.Username == username);
-
-        if (user != null)
-        {
-          this.dbContext.Users.Attach(user);
-
-          user.SessionKey = null;
-
-          this.dbContext.SaveChanges();
-        }
-
-        return new { result = "success" };
+        return Ok(new { result = "success" });
       }
       catch
       {
         // Log error
 
-        return new { result = "error" };
+        return BadRequest(new { result = "error" });
       }      
     }
 
@@ -153,35 +155,46 @@ namespace Shackmeets.Controllers
 
     [HttpPost("[action]")]
     [Authorize]
-    public object CreateShackmeet([FromBody] Meet meet)
+    public IActionResult CreateShackmeet([FromBody] MeetDto meet)
     {
       try
       {
         // Implement PRL
         // Validate fields
-        // Verify token
 
-        return new { result = "not implemented" };
+        return Ok(new { result = "Not implemented" });
       }
       catch
       {
         // Log error
 
-        return new { result = "error" };
+        return BadRequest(new { result = "error" });
       }
     }
 
     [HttpPost("[action]")]
     [Authorize]
-    public object Rsvp(int meetId, string username, int rsvpTypeId, int numAttendees)
+    public IActionResult Rsvp([FromBody] RsvpDto rsvpDto)
     {
       try
       {
-        // verify user token
-        // verify user exists
-        // verify meet exists
+        // Verify user exists
+        bool userExists = this.dbContext.Users.Any(u => u.Username == rsvpDto.Username);
 
-        var rsvp = this.dbContext.Rsvps.FirstOrDefault(r => r.MeetId == meetId && r.Username == username);
+        if (!userExists)
+        {
+          return BadRequest(new { result = "User does not exist." });
+        }
+
+        // Verify meet exists
+        bool meetExists = this.dbContext.Meets.Any(m => m.MeetId == rsvpDto.MeetId);
+
+        if (!meetExists)
+        {
+          return BadRequest(new { result = "Meet does not exist." });
+        }
+
+        var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == rsvpDto.Username);
 
         if (rsvp != null)
         {
@@ -193,25 +206,25 @@ namespace Shackmeets.Controllers
           // New RSVP
           rsvp = new Rsvp
           {
-            MeetId = meetId,
-            Username = username
+            MeetId = rsvpDto.MeetId,
+            Username = rsvpDto.Username
           };
 
           this.dbContext.Add(rsvp);
         }
 
-        rsvp.RsvpTypeId = rsvpTypeId;
-        rsvp.NumAttendees = numAttendees;
+        rsvp.RsvpTypeId = rsvpDto.RsvpTypeId;
+        rsvp.NumAttendees = rsvpDto.NumAttendees;
 
         this.dbContext.SaveChanges();
 
-        return new { result = "success" };
+        return Ok(new { result = "RSVP updated." });
       }
       catch
       {
         // Log error
 
-        return new { result = "error" };
+        return BadRequest(new { result = "Error" });
       }
     }
     

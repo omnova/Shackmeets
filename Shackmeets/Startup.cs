@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -30,55 +31,62 @@ namespace Shackmeets
     {
       services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-      // Test connection
-      var connection = @"Server=(localdb)\MSSQLLocalDB;Database=ShackmeetsDev;Trusted_Connection=True;ConnectRetryCount=0";
+      // Configure strongly typed settings objects
+      var appSettingsSection = Configuration.GetSection("AppSettings");
+      services.Configure<AppSettings>(appSettingsSection);
 
-      services.AddDbContext<ShackmeetsDbContext>(options => options.UseSqlServer(connection));
+      // Configure jwt authentication
+      var appSettings = appSettingsSection.Get<AppSettings>();
+
+      services.AddDbContext<ShackmeetsDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
       
       // In production, the React files will be served from this directory
       services.AddSpaStaticFiles(configuration =>
         {
-            configuration.RootPath = "ClientApp/build";
+          configuration.RootPath = "ClientApp/build";
         });
 
       // http://jasonwatmore.com/post/2018/06/26/aspnet-core-21-simple-api-for-authentication-registration-and-user-management#startup-cs
 
-      //  // Should retrieve from somewhere
-      //  var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TEMP"));
+      var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 
-      //  services.AddAuthentication(x =>
-      //  {
-      //    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-      //    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-      //  })
-      //  .AddJwtBearer(x =>
-      //  {
-      //    x.Events = new JwtBearerEvents
-      //    {
-      //      OnTokenValidated = context =>
-      //      {
-      //        var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-      //        var userId = int.Parse(context.Principal.Identity.Name);
-      //        var user = userService.GetById(userId);
-      //        if (user == null)
-      //        {
-      //                // return unauthorized if user no longer exists
-      //                context.Fail("Unauthorized");
-      //        }
+      services.AddAuthentication(x =>
+      {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+      })
+      .AddJwtBearer(x =>
+      {
+        x.Events = new JwtBearerEvents
+        {
+          OnTokenValidated = context =>
+          {
+            var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+            var username = context.Principal.Identity.Name;
 
-      //        return Task.CompletedTask;
-      //      }
-      //    };
-      //    x.RequireHttpsMetadata = false;
-      //    x.SaveToken = true;
-      //    x.TokenValidationParameters = new TokenValidationParameters
-      //    {
-      //      ValidateIssuerSigningKey = true,
-      //      IssuerSigningKey = new SymmetricSecurityKey(key),
-      //      ValidateIssuer = false,
-      //      ValidateAudience = false
-      //    };
-      //  }); ns.Audience = "shackmeets.com";
+            if (authService.UserExists(username))
+            {
+              // do something?
+            }
+
+            // There is no check to do here because we create the user record on their first successful login.
+
+            return Task.CompletedTask;
+          }
+        };
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidateIssuerSigningKey = true,
+          IssuerSigningKey = new SymmetricSecurityKey(key),
+          ValidateIssuer = false,
+          ValidateAudience = false
+        };
+      });
+
+      // Configure DI for application services
+      services.AddScoped<IAuthService, AuthService>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,7 +105,7 @@ namespace Shackmeets
       app.UseHttpsRedirection();
       app.UseStaticFiles();
       app.UseSpaStaticFiles();
-      //app.UseAuthentication();
+      app.UseAuthentication();
 
       app.UseMvc(routes =>
       {
