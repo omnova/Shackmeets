@@ -8,99 +8,17 @@ using Microsoft.EntityFrameworkCore;
 
 using Shackmeets.Models;
 using Shackmeets.Dtos;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Options;
-using System.Text;
-using System.Security.Claims;
 
 namespace Shackmeets.Controllers
 {
   [Route("api")]
-  public class ApiController : Controller
+  public class ShackmeetApiController : Controller
   {
     private ShackmeetsDbContext dbContext = null;
-    private AppSettings appSettings = null;
 
-    public ApiController(ShackmeetsDbContext context, IOptions<AppSettings> appSettings)
+    public ShackmeetApiController(ShackmeetsDbContext context)
     {
       this.dbContext = context;
-      this.appSettings = appSettings.Value;
-    }
-
-    [HttpPost("[action]")]
-    public IActionResult Login([FromBody] UserDto userDto)
-    {
-      try
-      {
-        // Change to DI service? Seems overkill
-        var chatty = new ChattyWrapper();
-
-        var isValid = chatty.VerifyCredentials(userDto.Username, userDto.Password);
-
-        if (!isValid)
-        {
-          return BadRequest(new { message = "Username or password is incorrect" });
-        }
-
-        var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
-
-        if (user == null)
-        {
-          // New user, create a user record
-          user = new User
-          {
-            Username = userDto.Username
-          };
-
-          this.dbContext.Users.Add(user);            
-          this.dbContext.SaveChanges();
-        }
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-          Subject = new ClaimsIdentity(new Claim[]
-            {
-                  new Claim(ClaimTypes.Name, user.Username)
-            }),
-          Expires = DateTime.UtcNow.AddDays(30),
-          SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var tokenString = tokenHandler.WriteToken(token);
-
-        // return basic user info (without password) and token to store client side
-        return Ok(new
-        {
-          Username = user.Username,
-          Token = tokenString
-        });        
-      }
-      catch
-      {
-        // Log error
-
-        return BadRequest(new { message = "An error occurred" });
-      }
-    }
-
-    [HttpPost("[action]")]
-    [Authorize]
-    public IActionResult LogOut(string username)
-    {
-      try
-      {
-        return Ok(new { result = "success" });
-      }
-      catch
-      {
-        // Log error
-
-        return BadRequest(new { result = "error" });
-      }      
     }
 
     [HttpGet("[action]")]
@@ -155,14 +73,85 @@ namespace Shackmeets.Controllers
 
     [HttpPost("[action]")]
     [Authorize]
-    public IActionResult CreateShackmeet([FromBody] MeetDto meet)
+    public IActionResult CreateShackmeet([FromBody] MeetDto meetDto)
     {
       try
       {
         // Implement PRL
-        // Validate fields
 
-        return Ok(new { result = "Not implemented" });
+        // Create new meet
+        var meet = new Meet
+        {
+          Name = meetDto.Name,
+          Description = meetDto.Description,
+          OrganizerUsername = meetDto.OrganizerUsername,
+          EventDate = meetDto.EventDate,
+          LocationName = meetDto.LocationName,
+          LocationAddress = meetDto.LocationAddress,
+          LocationState = meetDto.LocationState,
+          LocationCountry = meetDto.LocationCountry,
+          LocationLatitude = meetDto.LocationLatitude,
+          LocationLongitude = meetDto.LocationLongitude,
+          WillPostAnnouncement = meetDto.WillPostAnnouncement,
+          IsDeleted = false
+        };
+
+        // Validate fields
+        if (false)
+        {
+          // Return validation errors
+        }
+
+        this.dbContext.Meets.Add(meet);
+        this.dbContext.SaveChanges();
+
+        return Ok(new { result = "Yay sorta implemented" });
+      }
+      catch
+      {
+        // Log error
+
+        return BadRequest(new { result = "error" });
+      }
+    }
+
+    [HttpPost("[action]")]
+    [Authorize]
+    public IActionResult UpdateShackmeet([FromBody] MeetDto meetDto)
+    {
+      try
+      {
+        var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
+
+        if (meet == null)
+        {
+          return BadRequest(new { result = "Shackmeet does not exist." });
+        }
+        
+        // Update meet
+        meet.Name = meetDto.Name;
+        meet.Description = meetDto.Description;
+        meet.OrganizerUsername = meetDto.OrganizerUsername;
+        meet.EventDate = meetDto.EventDate;
+        meet.LocationName = meetDto.LocationName;
+        meet.LocationAddress = meetDto.LocationAddress;
+        meet.LocationState = meetDto.LocationState;
+        meet.LocationCountry = meetDto.LocationCountry;
+        meet.LocationLatitude = meetDto.LocationLatitude;
+        meet.LocationLongitude = meetDto.LocationLongitude;
+        meet.WillPostAnnouncement = meetDto.WillPostAnnouncement;
+        meet.IsDeleted = false;
+        
+        // Validate fields
+        if (false)
+        {
+          // Return validation errors
+        }
+
+        this.dbContext.Meets.Attach(meet);
+        this.dbContext.SaveChanges();
+
+        return Ok(new { result = "Yay sorta implemented" });
       }
       catch
       {
@@ -226,11 +215,6 @@ namespace Shackmeets.Controllers
 
         return BadRequest(new { result = "Error" });
       }
-    }
-    
-    public void ResendNotification()
-    {
-
     }
   }
 }

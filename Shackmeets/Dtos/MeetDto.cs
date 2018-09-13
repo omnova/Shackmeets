@@ -7,6 +7,8 @@ namespace Shackmeets.Dtos
 {
   public class MeetDto
   {
+    public int MeetId { get; set; }
+
     public string Name { get; set; }
     public string Description { get; set; }
     public string OrganizerUsername { get; set; }
