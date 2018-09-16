@@ -1,0 +1,26 @@
+﻿Make google maps service more robust
+- Include token with requests so it stops complaining
+- Make the geolocation querying a little safer
+
+Implement server-side model validation
+- Find a third party validator (haven't seen one I like yet) or write a basic one (bleh)
+- Apply to all post requests
+
+Implement admin functionality
+- Because I'm the boss
+
+Notifications
+- Implement notification service
+  - email
+  - shackmessage
+  - location distance calculation (currently sitting in google maps api service class)
+- Update actions to trigger notifications
+
+Cleanup
+- Clean up DTOs (there are some that are overused)
+- Clean up the startup
+
+Figure out Swagger (need API documentation)
+- Add more complete summary comments to actions and services
+
+Create conversion for existing Shackmeets data into new schema
