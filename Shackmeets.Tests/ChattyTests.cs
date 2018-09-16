@@ -33,29 +33,29 @@ namespace Shackmeets.Tests
       Assert.IsFalse(result);
     }
 
-    [TestMethod]
-    public void TestAuthenticationAsyncSuccess()
-    {
-      TestAuthenticationAsyncSuccessInner();
-    }
+    //[TestMethod]
+    //public void TestAuthenticationAsyncSuccess()
+    //{
+    //  TestAuthenticationAsyncSuccessInner();
+    //}
 
-    public async void TestAuthenticationAsyncSuccessInner()
-    {
-      var result = chatty.VerifyCredentialsAsync(username, password);
+    //public async void TestAuthenticationAsyncSuccessInner()
+    //{
+    //  var result = chatty.VerifyCredentialsAsync(username, password);
 
-      var response = await result;
+    //  var response = await result;
 
-      Assert.IsTrue(response);
-    }
+    //  Assert.IsTrue(response);
+    //}
 
-    [TestMethod]
-    public void TestAuthenticationAsyncFailure()
-    {
-      // Fake a bad password
-      bool result = chatty.VerifyCredentials(username, password + "da;lsjd;asf");
+    //[TestMethod]
+    //public void TestAuthenticationAsyncFailure()
+    //{
+    //  // Fake a bad password
+    //  bool result = chatty.VerifyCredentials(username, password + "da;lsjd;asf");
 
-      Assert.IsFalse(result);
-    }
+    //  Assert.IsFalse(result);
+    //}
 
     [TestMethod]
     public void TestPost()

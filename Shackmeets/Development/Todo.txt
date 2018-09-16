@@ -1,5 +1,4 @@
 ﻿Make google maps service more robust
-- Include token with requests so it stops complaining
 - Make the geolocation querying a little safer
 
 Implement server-side model validation
