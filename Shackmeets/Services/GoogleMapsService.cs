@@ -54,18 +54,18 @@ namespace Shackmeets.Services
 
     public GoogleMapsAddressInfo GetAddressInfo(string address)
     {      
-      const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?address={0}&sensor=false";
+      const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?address={0}&key={1}";
 
-      string url = string.Format(urlFormat, WebUtility.UrlEncode(address));
+      string url = string.Format(urlFormat, WebUtility.UrlEncode(address), this.appSettings.GoogleMaps.MapsApiKey);
 
       return GetGoogleMapsAddressInfo(url);
     }
 
     public GoogleMapsAddressInfo GetAddressInfo(decimal latitude, decimal longitude)
     {
-      const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?latlng={0},{1}&sensor=false";
+      const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?latlng={0},{1}&key={2}";
 
-      string url = string.Format(urlFormat, WebUtility.UrlEncode(latitude.ToString()), WebUtility.UrlEncode(longitude.ToString()));
+      string url = string.Format(urlFormat, WebUtility.UrlEncode(latitude.ToString()), WebUtility.UrlEncode(longitude.ToString()), this.appSettings.GoogleMaps.MapsApiKey);
 
       return GetGoogleMapsAddressInfo(url);
     }
