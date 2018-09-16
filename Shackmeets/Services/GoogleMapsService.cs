@@ -41,29 +41,23 @@ namespace Shackmeets.Services
 
   public class GoogleMapsService : IGoogleMapsService
   {
-    private readonly AppSettings appSettings;
+    private readonly string apiKey;
 
     public GoogleMapsService(string apiKey)
     {
-      this.appSettings = new AppSettings
-      {
-        GoogleMaps = new AppSettings.GoogleMapsSettings
-        {
-          MapsApiKey = apiKey
-        }
-      };
+      this.apiKey = apiKey;
     }
 
     public GoogleMapsService(IOptions<AppSettings> appSettings)
     {
-      this.appSettings = appSettings.Value;
+      this.apiKey = appSettings.Value.GoogleMaps.MapsApiKey;
     }
 
     public GoogleMapsAddressInfo GetAddressInfo(string address)
     {      
       const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?address={0}&key={1}";
 
-      string url = string.Format(urlFormat, WebUtility.UrlEncode(address), this.appSettings.GoogleMaps.MapsApiKey);
+      string url = string.Format(urlFormat, WebUtility.UrlEncode(address), WebUtility.UrlEncode(this.apiKey));
 
       using (var client = new WebClient())
       {
@@ -77,7 +71,7 @@ namespace Shackmeets.Services
     {
       const string urlFormat = "https://maps.googleapis.com/maps/api/geocode/json?latlng={0},{1}&key={2}";
 
-      string url = string.Format(urlFormat, WebUtility.UrlEncode(latitude.ToString()), WebUtility.UrlEncode(longitude.ToString()), this.appSettings.GoogleMaps.MapsApiKey);
+      string url = string.Format(urlFormat, WebUtility.UrlEncode(latitude.ToString()), WebUtility.UrlEncode(longitude.ToString()), WebUtility.UrlEncode(this.apiKey));
 
       using (var client = new WebClient())
       {

@@ -31,6 +31,26 @@ namespace Shackmeets.Tests
     }
 
     [TestMethod]
+    public void TestGetAddressInfoWithCountry()
+    {
+      string address = "Norway";
+
+      var result = googleMapsService.GetAddressInfo(address);
+
+      Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
+    public void TestGetAddressInfoWithState()
+    {
+      string address = "Texas";
+
+      var result = googleMapsService.GetAddressInfo(address);
+
+      Assert.IsTrue(result.IsValid);
+    }
+
+    [TestMethod]
     public void TestGetAddressInfoWithLatLong()
     {
       decimal latitude = 33.0991992m;
