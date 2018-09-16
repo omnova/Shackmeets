@@ -1,0 +1,77 @@
+{
+	"info": {
+		"_postman_id": "898f9028-bfaa-4d3c-918c-bcbcc7d246fa",
+		"name": "Google",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Maps Geolocation with Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=AIzaSyASCzvAms7C6-dnRvwYhBpl4VwoiJlj8MI",
+					"protocol": "https",
+					"host": [
+						"maps",
+						"googleapis",
+						"com"
+					],
+					"path": [
+						"maps",
+						"api",
+						"geocode",
+						"json"
+					],
+					"query": [
+						{
+							"key": "address",
+							"value": "1600+Amphitheatre+Parkway,+Mountain+View,+CA"
+						},
+						{
+							"key": "key",
+							"value": "AIzaSyASCzvAms7C6-dnRvwYhBpl4VwoiJlj8MI"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Maps Geolocation with Lat/Long",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "https://maps.googleapis.com/maps/api/geocode/json?address=10936+Jewelweed+Dr%2C+Frisco%2C+TX+75033%2C+USA&sensor=false",
+					"protocol": "https",
+					"host": [
+						"maps",
+						"googleapis",
+						"com"
+					],
+					"path": [
+						"maps",
+						"api",
+						"geocode",
+						"json"
+					],
+					"query": [
+						{
+							"key": "address",
+							"value": "10936+Jewelweed+Dr%2C+Frisco%2C+TX+75033%2C+USA"
+						},
+						{
+							"key": "sensor",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

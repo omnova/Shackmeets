@@ -1,0 +1,299 @@
+{
+	"info": {
+		"_postman_id": "c4cbe484-c0b9-471d-8477-66d1980dc49a",
+		"name": "Shackmeets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7eaf0d3c-c8ef-4790-a352-8720f0ed0954",
+						"type": "text/javascript",
+						"exec": [
+							"var data = pm.response.json();",
+							"pm.environment.set(\"token\", data.token);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/Login",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"Login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdatePreferences",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"omnova\"\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/UpdatePreferences",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"UpdatePreferences"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetShackmeets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{baseuri}}/api/GetShackmeets",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"GetShackmeets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetArchivedShackmeets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{baseuri}}/api/GetArchivedShackmeets",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"GetArchivedShackmeets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetShackmeet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{baseuri}}/api/GetShackmeet?meetId=1",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"GetShackmeet"
+					],
+					"query": [
+						{
+							"key": "meetId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateShackmeet",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"MYSHACKMEET\",\n    \"description\": \"DESC\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"2018-09-14T00:00:00\",\n    \"locationName\": \"Somewhere\",\n    \"locationAddress\": \"101 Someplace Ave\",\n    \"locationState\": 23425,\n    \"locationCountry\": \"USA!USA!\",\n    \"locationLatitude\": 3,\n    \"locationLongitude\": 6\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/CreateShackmeet",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"CreateShackmeet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateShackmeet",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"meetId\": 1,\n    \"name\": \"NEW NAME BITCHES\",\n    \"description\": \"DESCRIPTION WOOOOOOO\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"2018-09-14T00:00:00\",\n    \"locationName\": \"Somewhere\",\n    \"locationAddress\": \"101 Someplace Ave\",\n    \"locationState\": 23425,\n    \"locationCountry\": \"USA!USA!\",\n    \"locationLatitude\": 3,\n    \"locationLongitude\": 6\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/UpdateShackmeet",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"UpdateShackmeet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CancelShackmeet",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"meetId\": 1\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/CancelShackmeet",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"CancelShackmeet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Rsvp",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"meetId\": 1,\n\t\"username\": \"{{username}}\",\n\t\"rsvpTypeId\": 2,\n\t\"numAttendees\": 3\n}"
+				},
+				"url": {
+					"raw": "{{baseuri}}/api/Rsvp",
+					"host": [
+						"{{baseuri}}"
+					],
+					"path": [
+						"api",
+						"Rsvp"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "e60f1214-bbfd-4438-849f-00fba98d2b63",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "253f7cb9-ecf4-4641-b43c-bf5fdfeefb4b",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
