@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Shackmeets.Models;
 using Shackmeets.Dtos;
 using Microsoft.Extensions.Logging;
+using Shackmeets.Services;
 
 namespace Shackmeets.Controllers
 {
@@ -17,11 +18,13 @@ namespace Shackmeets.Controllers
   {
     private readonly ShackmeetsDbContext dbContext;
     private readonly ILogger logger;
+    private readonly IGoogleMapsService googleMapsService;
 
-    public ShackmeetApiController(ShackmeetsDbContext context, ILogger<ShackmeetApiController> logger)
+    public ShackmeetApiController(ShackmeetsDbContext context, ILogger<ShackmeetApiController> logger, IGoogleMapsService googleMapsService)
     {
       this.dbContext = context;
       this.logger = logger;
+      this.googleMapsService = googleMapsService;
     }
 
     [HttpGet("[action]")]
@@ -29,6 +32,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("GetShackmeets");
+
         var meets = this.dbContext
           .Meets
           .AsNoTracking()
@@ -60,7 +65,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -69,6 +74,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("GetArchivedShackmeets");
+
         var meets = this.dbContext
           .Meets
           .AsNoTracking()
@@ -100,7 +107,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -109,6 +116,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("GetShackmeet");
+
         var meet = this.dbContext.Meets.AsNoTracking().SingleOrDefault(m => m.MeetId == meetId);
 
         if (meet == null)
@@ -147,7 +156,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -157,6 +166,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("CreateShackmeet");
+
         // PRL
         int numRecentMeets = this.dbContext.Meets.Count(m => m.OrganizerUsername == meetDto.OrganizerUsername && m.TimestampCreate >= DateTime.Now.AddMinutes(-5));
 
@@ -166,8 +177,7 @@ namespace Shackmeets.Controllers
         }
 
         // Get additional address info (and verify address)
-        var mapsWrapper = new GoogleMapsWrapper();
-        var addressInfo = mapsWrapper.GetAddressInfo(meetDto.LocationAddress);
+        var addressInfo = this.googleMapsService.GetAddressInfo(meetDto.LocationAddress);
       
         if (!addressInfo.IsValid)
         {
@@ -207,7 +217,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -217,6 +227,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("UpdateShackmeet");
+
         var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
         if (meet == null)
@@ -225,13 +237,14 @@ namespace Shackmeets.Controllers
         }
 
         // Get additional address info (and verify address)
-        var mapsWrapper = new GoogleMapsWrapper();
-        var addressInfo = mapsWrapper.GetAddressInfo(meetDto.LocationAddress);
+        var addressInfo = this.googleMapsService.GetAddressInfo(meetDto.LocationAddress);
 
         if (!addressInfo.IsValid)
         {
           return BadRequest(new { result = "error", message = "Invalid address." });
         }
+
+        this.dbContext.Meets.Attach(meet);
 
         // Update meet
         meet.Name = meetDto.Name;
@@ -253,7 +266,6 @@ namespace Shackmeets.Controllers
           // Return validation errors
         }
 
-        this.dbContext.Meets.Attach(meet);
         this.dbContext.SaveChanges();
 
         return Ok(new { result = "success" });
@@ -263,7 +275,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -273,6 +285,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("CancelShackmeet");
+
         var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
         if (meet == null)
@@ -280,10 +294,11 @@ namespace Shackmeets.Controllers
           return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
         }
 
+        this.dbContext.Meets.Attach(meet);
+
         // Update meet
         meet.IsCancelled = true;
 
-        this.dbContext.Meets.Attach(meet);
         this.dbContext.SaveChanges();
 
         return Ok(new { result = "success" });
@@ -293,7 +308,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -303,6 +318,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("Rsvp");
+
         // Verify user exists
         bool userExists = this.dbContext.Users.Any(u => u.Username == rsvpDto.Username);
 
@@ -350,7 +367,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
   }

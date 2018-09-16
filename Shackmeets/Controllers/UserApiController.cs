@@ -36,6 +36,8 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("Login");
+
         // Change to DI service? Seems overkill
         var chatty = new ChattyWrapper();
 
@@ -88,7 +90,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
 
@@ -98,12 +100,16 @@ namespace Shackmeets.Controllers
     {
       try
       {
+        this.logger.LogDebug("UpdatePreferences");
+
         var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
 
         if (user == null)
         {
           return BadRequest(new { result = "User does not exist." });
         }
+
+        this.dbContext.Users.Attach(user);
 
         // Update user
         user.LocationLatitude = userDto.LocationLatitude;
@@ -114,7 +120,6 @@ namespace Shackmeets.Controllers
         user.NotifyByEmail = userDto.NotifyByEmail;
         user.NotificationEmail = userDto.NotificationEmail;
 
-        this.dbContext.Users.Attach(user);
         this.dbContext.SaveChanges();
 
         return Ok(new { result = "success" });
@@ -124,24 +129,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "" });
-      }
-    }
-
-    [HttpPost("[action]")]
-    [Authorize]
-    public IActionResult LogOut([FromBody] string username)
-    {
-      try
-      {
-        return Ok(new { result = "success" });
-      }
-      catch (Exception e)
-      {
-        // Log error
-        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
-
-        return BadRequest(new { result = "error", message = "" });
+        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
       }
     }
   }
