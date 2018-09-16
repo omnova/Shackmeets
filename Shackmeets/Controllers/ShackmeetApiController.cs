@@ -10,6 +10,7 @@ using Shackmeets.Models;
 using Shackmeets.Dtos;
 using Microsoft.Extensions.Logging;
 using Shackmeets.Services;
+using Shackmeets.Validators;
 
 namespace Shackmeets.Controllers
 {
@@ -40,6 +41,10 @@ namespace Shackmeets.Controllers
           .AsNoTracking()
           .Where(m => !m.IsCancelled && m.EventDate >= DateTime.Today)
           .Include(m => m.Rsvps)
+          .ToList();
+
+        // Had to split this because RSVPs weren't being included for some reason
+        var meetListings = meets
           .Select(m => new MeetListingDto
           {
             MeetId = m.MeetId,
@@ -59,7 +64,7 @@ namespace Shackmeets.Controllers
           })
           .ToList();
 
-        return Ok(meets);
+        return Ok(meetListings);
       }
       catch (Exception e)
       {
@@ -83,6 +88,10 @@ namespace Shackmeets.Controllers
           .AsNoTracking()
           .Where(m => m.IsCancelled || m.EventDate < DateTime.Today)
           .Include(m => m.Rsvps)
+          .ToList();
+
+        // Had to split this because RSVPs weren't being included for some reason
+        var meetListings = meets
           .Select(m => new MeetListingDto
           {
             MeetId = m.MeetId,
@@ -102,7 +111,7 @@ namespace Shackmeets.Controllers
           })
           .ToList();
 
-        return Ok(meets);
+        return Ok(meetListings);
       }
       catch (Exception e)
       {
@@ -120,6 +129,7 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("GetShackmeet");
 
+        // Verify meet exists
         var meet = this.dbContext
           .Meets
           .AsNoTracking()
@@ -131,6 +141,7 @@ namespace Shackmeets.Controllers
           return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
         }
 
+        // Load RSVPs
         var rsvpDtos = meet.Rsvps.Select(r => new RsvpDto
         {
           Username = r.Username,
@@ -139,6 +150,7 @@ namespace Shackmeets.Controllers
           NumAttendees = r.NumAttendees
         }).ToList();
 
+        // Map data to DTO
         var meetDto = new MeetDto
         {
           MeetId = meet.MeetId,
@@ -174,6 +186,12 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("CreateShackmeet");
 
+        // Verify input exists
+        if (meetDto == null)
+        {
+          return BadRequest(new { result = "error", message = "Input is not well formed." });
+        }
+
         // PRL
         int numRecentMeets = this.dbContext.Meets.Count(m => m.OrganizerUsername == meetDto.OrganizerUsername && m.TimestampCreate >= DateTime.Now.AddMinutes(-5));
 
@@ -208,9 +226,12 @@ namespace Shackmeets.Controllers
         };
 
         // Validate fields
-        if (false)
+        var validator = new MeetValidator();
+        var validationResult = validator.Validate(meet);
+
+        if (!validationResult.IsValid)
         {
-          // Return validation errors
+          return BadRequest(new { result = "error", messages = validationResult.Messages });
         }
 
         this.dbContext.Meets.Add(meet);
@@ -235,6 +256,13 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("UpdateShackmeet");
 
+        // Verify input exists
+        if (meetDto == null)
+        {
+          return BadRequest(new { result = "error", message = "Input is not well formed." });
+        }
+
+        // Verify meet exists
         var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
         if (meet == null)
@@ -265,11 +293,14 @@ namespace Shackmeets.Controllers
         meet.LocationLongitude = addressInfo.Longitude;
         meet.WillPostAnnouncement = meetDto.WillPostAnnouncement;
         meet.IsCancelled = false;
-        
+
         // Validate fields
-        if (false)
+        var validator = new MeetValidator();
+        var validationResult = validator.Validate(meet);
+
+        if (!validationResult.IsValid)
         {
-          // Return validation errors
+          return BadRequest(new { result = "error", messages = validationResult.Messages });
         }
 
         this.dbContext.SaveChanges();
@@ -293,6 +324,12 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("CancelShackmeet");
 
+        // Verify input exists
+        if (meetDto == null)
+        {
+          return BadRequest(new { result = "error", message = "Input is not well formed." });
+        }
+
         var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
         if (meet == null)
@@ -304,65 +341,6 @@ namespace Shackmeets.Controllers
 
         // Update meet
         meet.IsCancelled = true;
-
-        this.dbContext.SaveChanges();
-
-        return Ok(new { result = "success" });
-      }
-      catch (Exception e)
-      {
-        // Log error
-        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
-
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
-      }
-    }
-
-    [HttpPost("[action]")]
-    [Authorize]
-    public IActionResult Rsvp([FromBody] RsvpDto rsvpDto)
-    {
-      try
-      {
-        this.logger.LogDebug("Rsvp");
-
-        // Verify user exists
-        bool userExists = this.dbContext.Users.Any(u => u.Username == rsvpDto.Username);
-
-        if (!userExists)
-        {
-          return BadRequest(new { result = "error", message = "User does not exist." });
-        }
-
-        // Verify meet exists
-        bool meetExists = this.dbContext.Meets.Any(m => m.MeetId == rsvpDto.MeetId);
-
-        if (!meetExists)
-        {
-          return BadRequest(new { result = "error", message = "Meet does not exist." });
-        }
-
-        var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == rsvpDto.Username);
-
-        if (rsvp != null)
-        {
-          // Existing RSVP
-          this.dbContext.Rsvps.Attach(rsvp);
-        }
-        else
-        {
-          // New RSVP
-          rsvp = new Rsvp
-          {
-            MeetId = rsvpDto.MeetId,
-            Username = rsvpDto.Username
-          };
-
-          this.dbContext.Add(rsvp);
-        }
-
-        rsvp.RsvpTypeId = rsvpDto.RsvpTypeId;
-        rsvp.NumAttendees = rsvpDto.NumAttendees;
 
         this.dbContext.SaveChanges();
 

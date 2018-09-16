@@ -1,19 +1,20 @@
 ﻿using System;
+using System.Text;
+using System.Security.Claims;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Shackmeets.Models;
 using Shackmeets.Dtos;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Options;
-using System.Text;
-using System.Security.Claims;
-using Microsoft.Extensions.Logging;
+using Shackmeets.Validators;
 
 namespace Shackmeets.Controllers
 {
@@ -37,6 +38,12 @@ namespace Shackmeets.Controllers
       try
       {
         this.logger.LogDebug("Login");
+
+        // Verify input
+        if (userDto == null)
+        {
+          return BadRequest(new { result = "error", message = "Input is not well formed." });
+        }
 
         // Change to DI service? Seems overkill
         var chatty = new ChattyWrapper();
@@ -62,6 +69,7 @@ namespace Shackmeets.Controllers
           this.dbContext.SaveChanges();
         }
 
+        // Send back a token
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(appSettings.Secret);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -77,7 +85,6 @@ namespace Shackmeets.Controllers
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
-        // return basic user info (without password) and token to store client side
         return Ok(new
         {
           result = "success",
@@ -102,11 +109,18 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("UpdatePreferences");
 
+        // Verify input
+        if (userDto == null)
+        {
+          return BadRequest(new { result = "error", message = "Input is not well formed." });
+        }
+
+        // Verify user exists
         var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
 
         if (user == null)
         {
-          return BadRequest(new { result = "User does not exist." });
+          return BadRequest(new { result = "error", message = "User does not exist." });
         }
 
         this.dbContext.Users.Attach(user);
@@ -118,7 +132,16 @@ namespace Shackmeets.Controllers
         user.NotificationOptionId = userDto.NotificationOptionId;
         user.NotifyByShackmessage = userDto.NotifyByShackmessage;
         user.NotifyByEmail = userDto.NotifyByEmail;
-        user.NotificationEmail = userDto.NotificationEmail;
+        user.NotificationEmail = userDto.NotifyByEmail ? userDto.NotificationEmail : null;
+
+        // Validate fields
+        var validator = new UserValidator();
+        var validationResult = validator.Validate(user);
+
+        if (!validationResult.IsValid)
+        {
+          return BadRequest(new { result = "error", messages = validationResult.Messages });
+        }
 
         this.dbContext.SaveChanges();
 
