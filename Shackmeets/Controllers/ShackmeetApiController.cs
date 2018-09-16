@@ -34,6 +34,7 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("GetShackmeets");
 
+        // Could probably be more efficient
         var meets = this.dbContext
           .Meets
           .AsNoTracking()
@@ -76,6 +77,7 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("GetArchivedShackmeets");
 
+        // Could probably be more efficient
         var meets = this.dbContext
           .Meets
           .AsNoTracking()
@@ -118,7 +120,11 @@ namespace Shackmeets.Controllers
       {
         this.logger.LogDebug("GetShackmeet");
 
-        var meet = this.dbContext.Meets.AsNoTracking().SingleOrDefault(m => m.MeetId == meetId);
+        var meet = this.dbContext
+          .Meets
+          .AsNoTracking()
+          .Include(m => m.Rsvps)
+          .SingleOrDefault(m => m.MeetId == meetId);
 
         if (meet == null)
         {

@@ -10,8 +10,8 @@ using Shackmeets.Models;
 namespace Shackmeets.Migrations
 {
     [DbContext(typeof(ShackmeetsDbContext))]
-    [Migration("20180915204028_Initial")]
-    partial class Initial
+    [Migration("20180916054744_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
