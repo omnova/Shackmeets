@@ -10,8 +10,8 @@ using Shackmeets.Models;
 namespace Shackmeets.Migrations
 {
     [DbContext(typeof(ShackmeetsDbContext))]
-    [Migration("20180909223341_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20180915204028_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -31,7 +31,7 @@ namespace Shackmeets.Migrations
 
                     b.Property<DateTime>("EventDate");
 
-                    b.Property<bool>("IsDeleted");
+                    b.Property<bool>("IsCancelled");
 
                     b.Property<DateTime?>("LastAnnouncementPostDate");
 
@@ -92,6 +92,8 @@ namespace Shackmeets.Migrations
                     b.Property<string>("Username")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<bool>("IsAdmin");
+
                     b.Property<bool>("IsBanned");
 
                     b.Property<decimal>("LocationLatitude");
@@ -107,8 +109,6 @@ namespace Shackmeets.Migrations
                     b.Property<bool>("NotifyByEmail");
 
                     b.Property<bool>("NotifyByShackmessage");
-
-                    b.Property<string>("SessionKey");
 
                     b.HasKey("Username");
 

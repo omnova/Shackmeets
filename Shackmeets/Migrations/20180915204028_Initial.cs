@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Shackmeets.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,6 @@ namespace Shackmeets.Migrations
                 columns: table => new
                 {
                     Username = table.Column<string>(nullable: false),
-                    SessionKey = table.Column<string>(nullable: true),
                     LocationLatitude = table.Column<decimal>(nullable: false),
                     LocationLongitude = table.Column<decimal>(nullable: false),
                     MaxNotificationDistance = table.Column<int>(nullable: false),
@@ -21,6 +20,7 @@ namespace Shackmeets.Migrations
                     NotifyByShackmessage = table.Column<bool>(nullable: false),
                     NotifyByEmail = table.Column<bool>(nullable: false),
                     NotificationEmail = table.Column<string>(nullable: true),
+                    IsAdmin = table.Column<bool>(nullable: false),
                     IsBanned = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -48,7 +48,7 @@ namespace Shackmeets.Migrations
                     LocationLongitude = table.Column<decimal>(nullable: false),
                     WillPostAnnouncement = table.Column<bool>(nullable: false),
                     LastAnnouncementPostDate = table.Column<DateTime>(nullable: true),
-                    IsDeleted = table.Column<bool>(nullable: false)
+                    IsCancelled = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
