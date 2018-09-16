@@ -43,8 +43,15 @@ namespace Shackmeets.Services
   {
     private readonly AppSettings appSettings;
 
-    public GoogleMapsService()
+    public GoogleMapsService(string apiKey)
     {
+      this.appSettings = new AppSettings
+      {
+        GoogleMaps = new AppSettings.GoogleMapsSettings
+        {
+          MapsApiKey = apiKey
+        }
+      };
     }
 
     public GoogleMapsService(IOptions<AppSettings> appSettings)
@@ -58,7 +65,12 @@ namespace Shackmeets.Services
 
       string url = string.Format(urlFormat, WebUtility.UrlEncode(address), this.appSettings.GoogleMaps.MapsApiKey);
 
-      return GetGoogleMapsAddressInfo(url);
+      using (var client = new WebClient())
+      {
+        string result = client.DownloadString(url);
+
+        return ParseGoogleMapsAddressInfo(result);
+      }
     }
 
     public GoogleMapsAddressInfo GetAddressInfo(decimal latitude, decimal longitude)
@@ -67,12 +79,6 @@ namespace Shackmeets.Services
 
       string url = string.Format(urlFormat, WebUtility.UrlEncode(latitude.ToString()), WebUtility.UrlEncode(longitude.ToString()), this.appSettings.GoogleMaps.MapsApiKey);
 
-      return GetGoogleMapsAddressInfo(url);
-    }
-
-    // Could use a better name, or maybe just not bother
-    private GoogleMapsAddressInfo GetGoogleMapsAddressInfo(string url)
-    {
       using (var client = new WebClient())
       {
         string result = client.DownloadString(url);

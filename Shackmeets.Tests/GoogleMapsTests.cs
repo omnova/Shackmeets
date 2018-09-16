@@ -10,7 +10,15 @@ namespace Shackmeets.Tests
   [TestClass]
   public class GoogleMapsTests
   {
-    private IGoogleMapsService googleMapsService = new GoogleMapsService();
+    private IGoogleMapsService googleMapsService;
+
+    public GoogleMapsTests()
+    {
+      // Restricted by IP address
+      string apiKey = "AIzaSyASCzvAms7C6-dnRvwYhBpl4VwoiJlj8MI";
+
+      this.googleMapsService = new GoogleMapsService(apiKey);
+    }
 
     [TestMethod]
     public void TestGetAddressInfoWithAddress()
@@ -18,15 +26,19 @@ namespace Shackmeets.Tests
       string address = "2601 Preston Rd, Frisco, TX 75034";
 
       var result = googleMapsService.GetAddressInfo(address);
+
+      Assert.IsTrue(result.IsValid);
     }
 
     [TestMethod]
     public void TestGetAddressInfoWithLatLong()
     {
-      decimal latitude = 34.234m;
-      decimal longitude = 25.234m;
+      decimal latitude = 33.0991992m;
+      decimal longitude = -96.81132m;
 
       var result = googleMapsService.GetAddressInfo(latitude, longitude);
+
+      Assert.IsTrue(result.IsValid);
     }
   }
 }
