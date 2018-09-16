@@ -12,6 +12,15 @@ export const actionCreators = {
     dispatch({ type: requestLogin });
 
     const url = `api/GetShackmeets`;
+    //const body = {
+    //  username = "omnova",
+    //  password = "password"
+    //};
+
+    //const request = new Request => blah = {
+
+    //};
+
     const response = await fetch(url);
     const result = await response.json();
 

@@ -29,7 +29,7 @@ namespace Shackmeets.Migrations
 
                     b.Property<DateTime>("EventDate");
 
-                    b.Property<bool>("IsDeleted");
+                    b.Property<bool>("IsCancelled");
 
                     b.Property<DateTime?>("LastAnnouncementPostDate");
 
@@ -90,6 +90,8 @@ namespace Shackmeets.Migrations
                     b.Property<string>("Username")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<bool>("IsAdmin");
+
                     b.Property<bool>("IsBanned");
 
                     b.Property<decimal>("LocationLatitude");
@@ -105,8 +107,6 @@ namespace Shackmeets.Migrations
                     b.Property<bool>("NotifyByEmail");
 
                     b.Property<bool>("NotifyByShackmessage");
-
-                    b.Property<string>("SessionKey");
 
                     b.HasKey("Username");
 

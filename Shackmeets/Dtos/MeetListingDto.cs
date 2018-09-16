@@ -1,12 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Shackmeets.Dtos
 {
-  public class MeetDto
+  public class MeetListingDto
   {
     public int MeetId { get; set; }
 
@@ -22,19 +21,9 @@ namespace Shackmeets.Dtos
     public decimal LocationLatitude { get; set; }
     public decimal LocationLongitude { get; set; }
 
-    [JsonIgnore]
-    public bool WillPostAnnouncement { get; set; }
+    public bool IsCancelled { get; set; }
 
-    public List<RsvpDto> Rsvps { get; set; }
-    
-    public int InterestedCount
-    {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 2).Sum(r => r.NumAttendees) : 0; }
-    }
-    
-    public int GoingCount
-    {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 1).Sum(r => r.NumAttendees) : 0; }
-    }
+    public int InterestedCount { get; set; }
+    public int GoingCount { get; set; }
   }
 }

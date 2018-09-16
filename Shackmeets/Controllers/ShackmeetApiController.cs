@@ -8,66 +8,146 @@ using Microsoft.EntityFrameworkCore;
 
 using Shackmeets.Models;
 using Shackmeets.Dtos;
+using Microsoft.Extensions.Logging;
 
 namespace Shackmeets.Controllers
 {
   [Route("api")]
   public class ShackmeetApiController : Controller
   {
-    private ShackmeetsDbContext dbContext = null;
+    private readonly ShackmeetsDbContext dbContext;
+    private readonly ILogger logger;
 
-    public ShackmeetApiController(ShackmeetsDbContext context)
+    public ShackmeetApiController(ShackmeetsDbContext context, ILogger<ShackmeetApiController> logger)
     {
       this.dbContext = context;
+      this.logger = logger;
     }
 
     [HttpGet("[action]")]
-    public IEnumerable<Meet> GetShackmeets()
+    public IActionResult GetShackmeets()
     {
       try
       {
-        return this.dbContext
+        var meets = this.dbContext
           .Meets
           .AsNoTracking()
-          .Where(m => m.EventDate >= DateTime.Today)
+          .Where(m => !m.IsCancelled && m.EventDate >= DateTime.Today)
           .Include(m => m.Rsvps)
+          .Select(m => new MeetListingDto
+          {
+            MeetId = m.MeetId,
+            Name = m.Name,
+            Description = m.Description,
+            OrganizerUsername = m.OrganizerUsername,
+            EventDate = m.EventDate,
+            LocationName = m.LocationName,
+            LocationAddress = m.LocationAddress,
+            LocationState = m.LocationState,
+            LocationCountry = m.LocationCountry,
+            LocationLatitude = m.LocationLatitude,
+            LocationLongitude = m.LocationLongitude,
+            IsCancelled = m.IsCancelled,
+            GoingCount = m.GoingCount,
+            InterestedCount = m.InterestedCount
+          })
           .ToList();
+
+        return Ok(meets);
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return new List<Meet>();
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
     [HttpGet("[action]")]
-    public IEnumerable<Meet> GetArchivedShackmeets()
+    public IActionResult GetArchivedShackmeets()
     {
       try
       {
-        return this.dbContext.Meets.AsNoTracking().Where(m => m.EventDate < DateTime.Today).ToList();
+        var meets = this.dbContext
+          .Meets
+          .AsNoTracking()
+          .Where(m => m.IsCancelled || m.EventDate < DateTime.Today)
+          .Include(m => m.Rsvps)
+          .Select(m => new MeetListingDto
+          {
+            MeetId = m.MeetId,
+            Name = m.Name,
+            Description = m.Description,
+            OrganizerUsername = m.OrganizerUsername,
+            EventDate = m.EventDate,
+            LocationName = m.LocationName,
+            LocationAddress = m.LocationAddress,
+            LocationState = m.LocationState,
+            LocationCountry = m.LocationCountry,
+            LocationLatitude = m.LocationLatitude,
+            LocationLongitude = m.LocationLongitude,
+            IsCancelled = m.IsCancelled,
+            GoingCount = m.GoingCount,
+            InterestedCount = m.InterestedCount
+          })
+          .ToList();
+
+        return Ok(meets);
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return new List<Meet>();
-      }      
+        return BadRequest(new { result = "error", message = "" });
+      }
     }
 
     [HttpGet("[action]")]
-    public Meet GetShackmeet(int meetId)
+    public IActionResult GetShackmeet(int meetId)
     {
       try
       {
-        return this.dbContext.Meets.AsNoTracking().SingleOrDefault(m => m.MeetId == meetId);
+        var meet = this.dbContext.Meets.AsNoTracking().SingleOrDefault(m => m.MeetId == meetId);
+
+        if (meet == null)
+        {
+          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
+        }
+
+        var rsvpDtos = meet.Rsvps.Select(r => new RsvpDto
+        {
+          Username = r.Username,
+          MeetId = r.MeetId,
+          RsvpTypeId = r.RsvpTypeId,
+          NumAttendees = r.NumAttendees
+        }).ToList();
+
+        var meetDto = new MeetDto
+        {
+          MeetId = meet.MeetId,
+          OrganizerUsername = meet.OrganizerUsername,
+          Name = meet.Name,
+          Description = meet.Description,
+          EventDate = meet.EventDate,
+          LocationName = meet.LocationName,
+          LocationAddress = meet.LocationAddress,
+          LocationState = meet.LocationState,
+          LocationCountry = meet.LocationCountry,
+          LocationLatitude = meet.LocationLatitude,
+          LocationLongitude = meet.LocationLongitude,
+          Rsvps = rsvpDtos
+        };
+
+        return Ok(meetDto);
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return null;
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
@@ -77,7 +157,22 @@ namespace Shackmeets.Controllers
     {
       try
       {
-        // Implement PRL
+        // PRL
+        int numRecentMeets = this.dbContext.Meets.Count(m => m.OrganizerUsername == meetDto.OrganizerUsername && m.TimestampCreate >= DateTime.Now.AddMinutes(-5));
+
+        if (numRecentMeets >= 2)
+        {
+          return BadRequest(new { result = "error", message = "Slow your rolls." });
+        }
+
+        // Get additional address info (and verify address)
+        var mapsWrapper = new GoogleMapsWrapper();
+        var addressInfo = mapsWrapper.GetAddressInfo(meetDto.LocationAddress);
+      
+        if (!addressInfo.IsValid)
+        {
+          return BadRequest(new { result = "error", message = "Invalid address." });
+        }
 
         // Create new meet
         var meet = new Meet
@@ -88,12 +183,12 @@ namespace Shackmeets.Controllers
           EventDate = meetDto.EventDate,
           LocationName = meetDto.LocationName,
           LocationAddress = meetDto.LocationAddress,
-          LocationState = meetDto.LocationState,
-          LocationCountry = meetDto.LocationCountry,
-          LocationLatitude = meetDto.LocationLatitude,
-          LocationLongitude = meetDto.LocationLongitude,
+          LocationState = addressInfo.State,
+          LocationCountry = addressInfo.Country,
+          LocationLatitude = addressInfo.Latitude,
+          LocationLongitude = addressInfo.Longitude,
           WillPostAnnouncement = meetDto.WillPostAnnouncement,
-          IsDeleted = false
+          IsCancelled = false
         };
 
         // Validate fields
@@ -105,13 +200,14 @@ namespace Shackmeets.Controllers
         this.dbContext.Meets.Add(meet);
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "Yay sorta implemented" });
+        return Ok(new { result = "success" });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error" });
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
@@ -125,9 +221,18 @@ namespace Shackmeets.Controllers
 
         if (meet == null)
         {
-          return BadRequest(new { result = "Shackmeet does not exist." });
+          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
         }
-        
+
+        // Get additional address info (and verify address)
+        var mapsWrapper = new GoogleMapsWrapper();
+        var addressInfo = mapsWrapper.GetAddressInfo(meetDto.LocationAddress);
+
+        if (!addressInfo.IsValid)
+        {
+          return BadRequest(new { result = "error", message = "Invalid address." });
+        }
+
         // Update meet
         meet.Name = meetDto.Name;
         meet.Description = meetDto.Description;
@@ -135,12 +240,12 @@ namespace Shackmeets.Controllers
         meet.EventDate = meetDto.EventDate;
         meet.LocationName = meetDto.LocationName;
         meet.LocationAddress = meetDto.LocationAddress;
-        meet.LocationState = meetDto.LocationState;
-        meet.LocationCountry = meetDto.LocationCountry;
-        meet.LocationLatitude = meetDto.LocationLatitude;
-        meet.LocationLongitude = meetDto.LocationLongitude;
+        meet.LocationState = addressInfo.State;
+        meet.LocationCountry = addressInfo.Country;
+        meet.LocationLatitude = addressInfo.Latitude;
+        meet.LocationLongitude = addressInfo.Longitude;
         meet.WillPostAnnouncement = meetDto.WillPostAnnouncement;
-        meet.IsDeleted = false;
+        meet.IsCancelled = false;
         
         // Validate fields
         if (false)
@@ -151,13 +256,44 @@ namespace Shackmeets.Controllers
         this.dbContext.Meets.Attach(meet);
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "Yay sorta implemented" });
+        return Ok(new { result = "success" });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error" });
+        return BadRequest(new { result = "error", message = "" });
+      }
+    }
+
+    [HttpPost("[action]")]
+    [Authorize]
+    public IActionResult CancelShackmeet([FromBody] MeetDto meetDto)
+    {
+      try
+      {
+        var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
+
+        if (meet == null)
+        {
+          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
+        }
+
+        // Update meet
+        meet.IsCancelled = true;
+
+        this.dbContext.Meets.Attach(meet);
+        this.dbContext.SaveChanges();
+
+        return Ok(new { result = "success" });
+      }
+      catch (Exception e)
+      {
+        // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
+
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
@@ -172,7 +308,7 @@ namespace Shackmeets.Controllers
 
         if (!userExists)
         {
-          return BadRequest(new { result = "User does not exist." });
+          return BadRequest(new { result = "error", message = "User does not exist." });
         }
 
         // Verify meet exists
@@ -180,7 +316,7 @@ namespace Shackmeets.Controllers
 
         if (!meetExists)
         {
-          return BadRequest(new { result = "Meet does not exist." });
+          return BadRequest(new { result = "error", message = "Meet does not exist." });
         }
 
         var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == rsvpDto.Username);
@@ -207,13 +343,14 @@ namespace Shackmeets.Controllers
 
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "RSVP updated." });
+        return Ok(new { result = "success" });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "Error" });
+        return BadRequest(new { result = "error", message = "" });
       }
     }
   }

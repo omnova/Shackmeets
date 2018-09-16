@@ -13,19 +13,22 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace Shackmeets.Controllers
 {
   [Route("api")]
   public class UserApiController : Controller
   {
-    private ShackmeetsDbContext dbContext = null;
-    private AppSettings appSettings = null;
+    private readonly ShackmeetsDbContext dbContext;
+    private readonly AppSettings appSettings;
+    private readonly ILogger logger;
 
-    public UserApiController(ShackmeetsDbContext context, IOptions<AppSettings> appSettings)
+    public UserApiController(ShackmeetsDbContext context, IOptions<AppSettings> appSettings, ILogger<UserApiController> logger)
     {
       this.dbContext = context;
       this.appSettings = appSettings.Value;
+      this.logger = logger;
     }
 
     [HttpPost("[action]")]
@@ -40,7 +43,7 @@ namespace Shackmeets.Controllers
 
         if (!isValid)
         {
-          return BadRequest(new { message = "Username or password is incorrect" });
+          return BadRequest(new { result = "error", message = "Username or password is incorrect." });
         }
 
         var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
@@ -75,15 +78,17 @@ namespace Shackmeets.Controllers
         // return basic user info (without password) and token to store client side
         return Ok(new
         {
-          Username = user.Username,
-          Token = tokenString
+          result = "success",
+          username = user.Username,
+          token = tokenString
         });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { message = "An error occurred" });
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
@@ -114,11 +119,12 @@ namespace Shackmeets.Controllers
 
         return Ok(new { result = "success" });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error" });
+        return BadRequest(new { result = "error", message = "" });
       }
     }
 
@@ -130,11 +136,12 @@ namespace Shackmeets.Controllers
       {
         return Ok(new { result = "success" });
       }
-      catch
+      catch (Exception e)
       {
         // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error" });
+        return BadRequest(new { result = "error", message = "" });
       }
     }
   }
