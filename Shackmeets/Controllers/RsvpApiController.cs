@@ -33,7 +33,7 @@ namespace Shackmeets.Controllers
         // Verify input exists
         if (rsvpDto == null)
         {
-          return BadRequest(new { result = "error", message = "Input is not well formed." });
+          return BadRequest(new BadInputResponse());
         }
 
         // Verify user exists
@@ -41,7 +41,7 @@ namespace Shackmeets.Controllers
 
         if (!userExists)
         {
-          return BadRequest(new { result = "error", message = "User does not exist." });
+          return BadRequest(new ErrorResponse("Username or password is incorrect."));
         }
 
         // Verify meet exists
@@ -49,7 +49,7 @@ namespace Shackmeets.Controllers
 
         if (!meetExists)
         {
-          return BadRequest(new { result = "error", message = "Meet does not exist." });
+          return BadRequest(new ErrorResponse("Shackmeet does not exist."));
         }
 
         var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == rsvpDto.Username);
@@ -80,19 +80,19 @@ namespace Shackmeets.Controllers
 
         if (!validationResult.IsValid)
         {
-          return BadRequest(new { result = "error", messages = validationResult.Messages });
+          return BadRequest(new ValidationErrorResponse(validationResult.Messages));
         }
 
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "success" });
+        return Ok(new SuccessResponse());
       }
       catch (Exception e)
       {
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
   }

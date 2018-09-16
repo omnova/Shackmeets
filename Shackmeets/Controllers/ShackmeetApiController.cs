@@ -71,7 +71,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
 
@@ -118,7 +118,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
 
@@ -138,7 +138,7 @@ namespace Shackmeets.Controllers
 
         if (meet == null)
         {
-          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
+          return BadRequest(new ErrorResponse("Shackmeet does not exist."));
         }
 
         // Load RSVPs
@@ -174,7 +174,7 @@ namespace Shackmeets.Controllers
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
 
@@ -189,7 +189,7 @@ namespace Shackmeets.Controllers
         // Verify input exists
         if (meetDto == null)
         {
-          return BadRequest(new { result = "error", message = "Input is not well formed." });
+          return BadRequest(new BadInputResponse());
         }
 
         // PRL
@@ -197,15 +197,16 @@ namespace Shackmeets.Controllers
 
         if (numRecentMeets >= 2)
         {
-          return BadRequest(new { result = "error", message = "Slow your rolls." });
+          return BadRequest(new ErrorResponse("Slow your rolls."));
         }
+
 
         // Get additional address info (and verify address)
         var addressInfo = this.googleMapsService.GetAddressInfo(meetDto.LocationAddress);
       
         if (!addressInfo.IsValid)
         {
-          return BadRequest(new { result = "error", message = "Invalid address." });
+          return BadRequest(new ValidationErrorResponse("locationAddress", "Address does not correspond to a valid geocode location."));
         }
 
         // Create new meet
@@ -231,20 +232,20 @@ namespace Shackmeets.Controllers
 
         if (!validationResult.IsValid)
         {
-          return BadRequest(new { result = "error", messages = validationResult.Messages });
+          return BadRequest(new ValidationErrorResponse(validationResult.Messages));
         }
 
         this.dbContext.Meets.Add(meet);
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "success" });
+        return Ok(new SuccessResponse());
       }
       catch (Exception e)
       {
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
-
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        
+        return BadRequest(new CriticalErrorResponse());
       }
     }
 
@@ -259,7 +260,7 @@ namespace Shackmeets.Controllers
         // Verify input exists
         if (meetDto == null)
         {
-          return BadRequest(new { result = "error", message = "Input is not well formed." });
+          return BadRequest(new BadInputResponse());
         }
 
         // Verify meet exists
@@ -267,7 +268,7 @@ namespace Shackmeets.Controllers
 
         if (meet == null)
         {
-          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
+          return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
         }
 
         // Get additional address info (and verify address)
@@ -275,7 +276,7 @@ namespace Shackmeets.Controllers
 
         if (!addressInfo.IsValid)
         {
-          return BadRequest(new { result = "error", message = "Invalid address." });
+          return BadRequest(new ValidationErrorResponse("locationAddress", "Address does not correspond to a valid geocode location."));
         }
 
         this.dbContext.Meets.Attach(meet);
@@ -300,19 +301,19 @@ namespace Shackmeets.Controllers
 
         if (!validationResult.IsValid)
         {
-          return BadRequest(new { result = "error", messages = validationResult.Messages });
+          return BadRequest(new ValidationErrorResponse(validationResult.Messages));
         }
 
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "success" });
+        return Ok(new SuccessResponse());
       }
       catch (Exception e)
       {
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
 
@@ -327,14 +328,14 @@ namespace Shackmeets.Controllers
         // Verify input exists
         if (meetDto == null)
         {
-          return BadRequest(new { result = "error", message = "Input is not well formed." });
+          return BadRequest(new BadInputResponse());
         }
 
         var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
         if (meet == null)
         {
-          return BadRequest(new { result = "error", message = "Shackmeet does not exist." });
+          return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
         }
 
         this.dbContext.Meets.Attach(meet);
@@ -344,14 +345,14 @@ namespace Shackmeets.Controllers
 
         this.dbContext.SaveChanges();
 
-        return Ok(new { result = "success" });
+        return Ok(new SuccessResponse());
       }
       catch (Exception e)
       {
         // Log error
         this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
 
-        return BadRequest(new { result = "error", message = "An error occurred. Please notify omnova if errors persist." });
+        return BadRequest(new CriticalErrorResponse());
       }
     }
   }
