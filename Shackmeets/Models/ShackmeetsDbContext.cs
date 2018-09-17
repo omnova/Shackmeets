@@ -1,8 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Shackmeets.Models
 {
@@ -34,6 +30,9 @@ namespace Shackmeets.Models
       modelBuilder.Entity<Meet>()
         .HasMany(m => m.Rsvps)
         .WithOne(r => r.Meet);
+
+
+      modelBuilder.Entity<Notification>();
 
       //modelBuilder.Entity<Post>()
       //      .HasOne(p => p.Blog)

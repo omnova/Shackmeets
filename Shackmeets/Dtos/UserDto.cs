@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Shackmeets.Models;
 
 namespace Shackmeets.Dtos
 {
@@ -15,7 +12,7 @@ namespace Shackmeets.Dtos
     public decimal LocationLongitude { get; set; }
     public int MaxNotificationDistance { get; set; }
 
-    public int NotificationOptionId { get; set; }
+    public NotificationOption NotificationOption { get; set; }
     public bool NotifyByShackmessage { get; set; }
     public bool NotifyByEmail { get; set; }
     public string NotificationEmail { get; set; }

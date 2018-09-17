@@ -2,3 +2,4 @@
 Remove-Migration
 
 Update-Database
+Update-Database –TargetMigration: TheLastGoodMigration

@@ -1,9 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
 
 namespace Shackmeets.Models
 {
+  public enum NotificationOption
+  {
+    Never = 0,
+    IfWithinDistance = 1,
+    Always = 2
+  }
+
   public class User
   {
     public string Username { get; set; }
@@ -12,7 +17,7 @@ namespace Shackmeets.Models
     public decimal LocationLongitude { get; set; }
     public int MaxNotificationDistance { get; set; }
 
-    public int NotificationOptionId { get; set; }
+    public NotificationOption NotificationOption { get; set; }
     public bool NotifyByShackmessage { get; set; }
     public bool NotifyByEmail { get; set; }
     public string NotificationEmail { get; set; }

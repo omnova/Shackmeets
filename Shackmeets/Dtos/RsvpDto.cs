@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Shackmeets.Models;
 
 namespace Shackmeets.Dtos
 {
@@ -9,7 +6,7 @@ namespace Shackmeets.Dtos
   {    
     public int MeetId { get; set; }
     public string Username { get; set; }
-    public int RsvpTypeId { get; set; }
+    public RsvpType RsvpType { get; set; }
     public int NumAttendees { get; set; }
   }
 }

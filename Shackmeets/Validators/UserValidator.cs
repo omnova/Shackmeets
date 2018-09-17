@@ -20,11 +20,11 @@ namespace Shackmeets.Validators
         result.Messages.Add(message);
 
       // MaxNotificationDistance
-      if (!validator.IsRequiredIntegerRange("maxNotificationDistance", user.MaxNotificationDistance.ToString(), null, 12450, out message))
+      if (!validator.IsRequiredIntegerRange("maxNotificationDistance", user.MaxNotificationDistance, null, 12450, out message))
         result.Messages.Add(message);
 
-      // NotificationOptionId
-      if (!validator.IsRequiredIntegerRange("notificationOptionId", user.NotificationOptionId.ToString(), 0, 2, out message))
+      // NotificationOption
+      if (!validator.IsRequiredIntegerRange("notificationOption", (int)user.NotificationOption, 0, 2, out message))
         result.Messages.Add(message);
 
       // NotifyByEmail

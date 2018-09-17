@@ -146,7 +146,7 @@ namespace Shackmeets.Controllers
         {
           Username = r.Username,
           MeetId = r.MeetId,
-          RsvpTypeId = r.RsvpTypeId,
+          RsvpType = r.RsvpType,
           NumAttendees = r.NumAttendees
         }).ToList();
 
@@ -238,6 +238,8 @@ namespace Shackmeets.Controllers
         this.dbContext.Meets.Add(meet);
         this.dbContext.SaveChanges();
 
+        // Send new shackmeet notifications
+
         return Ok(new SuccessResponse());
       }
       catch (Exception e)
@@ -306,6 +308,8 @@ namespace Shackmeets.Controllers
 
         this.dbContext.SaveChanges();
 
+        // Send update notifications
+
         return Ok(new SuccessResponse());
       }
       catch (Exception e)
@@ -344,6 +348,54 @@ namespace Shackmeets.Controllers
         meet.IsCancelled = true;
 
         this.dbContext.SaveChanges();
+
+        // Send cancellation notifications
+
+        return Ok(new SuccessResponse());
+      }
+      catch (Exception e)
+      {
+        // Log error
+        this.logger.LogError("Message: {0}" + Environment.NewLine + "{1}", e.Message, e.StackTrace);
+
+        return BadRequest(new CriticalErrorResponse());
+      }
+    }
+
+    [HttpPost("[action]")]
+    public IActionResult ResendShackmeetNotification([FromBody] MeetDto meetDto)
+    {
+      try
+      {
+        this.logger.LogDebug("ResendShackmeetNotification");
+
+        // Verify input exists
+        if (meetDto == null)
+        {
+          return BadRequest(new BadInputResponse());
+        }
+
+        var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
+
+        if (meet == null)
+        {
+          return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
+        }
+
+        if (meet.LastAnnouncementPostDate.HasValue && meet.LastAnnouncementPostDate.Value.AddHours(18) < DateTime.Now)
+        {
+          return BadRequest(new ErrorResponse("You may only resend notifications every 18 hours."));
+        }
+
+        this.dbContext.Meets.Attach(meet);
+
+        // Update meet
+        meet.IsCancelled = true;
+
+        this.dbContext.SaveChanges();
+
+        // Send cancellation notifications
+        
 
         return Ok(new SuccessResponse());
       }

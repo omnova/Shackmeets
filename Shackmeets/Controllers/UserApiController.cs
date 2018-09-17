@@ -129,7 +129,7 @@ namespace Shackmeets.Controllers
         user.LocationLatitude = userDto.LocationLatitude;
         user.LocationLongitude = userDto.LocationLongitude;
         user.MaxNotificationDistance = userDto.MaxNotificationDistance;
-        user.NotificationOptionId = userDto.NotificationOptionId;
+        user.NotificationOption = userDto.NotificationOption;
         user.NotifyByShackmessage = userDto.NotifyByShackmessage;
         user.NotifyByEmail = userDto.NotifyByEmail;
         user.NotificationEmail = userDto.NotifyByEmail ? userDto.NotificationEmail : null;

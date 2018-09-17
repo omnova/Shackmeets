@@ -4,7 +4,7 @@ namespace Shackmeets.Dtos
 {
   public class ErrorResponse
   {
-    public string Result { get; private set; };
+    public string Result { get; private set; }
     public string Message { get; set; }
 
     public ErrorResponse(string message)

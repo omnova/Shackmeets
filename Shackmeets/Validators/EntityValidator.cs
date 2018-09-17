@@ -4,23 +4,9 @@ namespace Shackmeets.Validators
 {
   public class EntityValidator
   {
-    public bool IsRequiredIntegerRange(string fieldName, string rawValue, int? minValue, int? maxValue, out ValidationMessage message)
+    public bool IsRequiredIntegerRange(string fieldName, int value, int? minValue, int? maxValue, out ValidationMessage message)
     {
       message = null;
-
-      int value = 0;
-
-      // Must be integer
-      if (!int.TryParse(rawValue, out value))
-      {
-        message = new ValidationMessage
-        {
-          Field = fieldName,
-          Message = string.Format("Value must be an integer between {0} and {1}.", minValue, maxValue)
-        };
-
-        return false;
-      }
 
       // Range
       if (minValue.HasValue && maxValue.HasValue && (value < minValue.Value || value > maxValue.Value))

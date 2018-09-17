@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Shackmeets.Models;
 
 namespace Shackmeets.Dtos
 {
@@ -29,12 +29,12 @@ namespace Shackmeets.Dtos
     
     public int InterestedCount
     {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 2).Sum(r => r.NumAttendees) : 0; }
+      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpType == RsvpType.Interested).Sum(r => r.NumAttendees) : 0; }
     }
     
     public int GoingCount
     {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 1).Sum(r => r.NumAttendees) : 0; }
+      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpType == RsvpType.Going).Sum(r => r.NumAttendees) : 0; }
     }
   }
 }

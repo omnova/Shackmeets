@@ -10,7 +10,7 @@ using Shackmeets.Models;
 namespace Shackmeets.Migrations
 {
     [DbContext(typeof(ShackmeetsDbContext))]
-    [Migration("20180916054744_InitialCreate")]
+    [Migration("20180917012214_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,39 @@ namespace Shackmeets.Migrations
                     b.ToTable("Meets");
                 });
 
+            modelBuilder.Entity("Shackmeets.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("IsSent");
+
+                    b.Property<int?>("MeetId");
+
+                    b.Property<string>("MessageBody");
+
+                    b.Property<string>("MessageSubject");
+
+                    b.Property<int>("NotificationReason");
+
+                    b.Property<int>("NotificationType");
+
+                    b.Property<string>("TargetUserUsername");
+
+                    b.Property<string>("TargetUsername");
+
+                    b.Property<DateTime>("TimestampCreate");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("MeetId");
+
+                    b.HasIndex("TargetUserUsername");
+
+                    b.ToTable("Notification");
+                });
+
             modelBuilder.Entity("Shackmeets.Models.Rsvp", b =>
                 {
                     b.Property<int>("RsvpId")
@@ -104,7 +137,7 @@ namespace Shackmeets.Migrations
 
                     b.Property<string>("NotificationEmail");
 
-                    b.Property<int>("NotificationOptionId");
+                    b.Property<int>("NotificationOption");
 
                     b.Property<bool>("NotifyByEmail");
 
@@ -120,6 +153,17 @@ namespace Shackmeets.Migrations
                     b.HasOne("Shackmeets.Models.User", "Organizer")
                         .WithMany("Meets")
                         .HasForeignKey("OrganizerUsername");
+                });
+
+            modelBuilder.Entity("Shackmeets.Models.Notification", b =>
+                {
+                    b.HasOne("Shackmeets.Models.Meet", "Meet")
+                        .WithMany()
+                        .HasForeignKey("MeetId");
+
+                    b.HasOne("Shackmeets.Models.User", "TargetUser")
+                        .WithMany()
+                        .HasForeignKey("TargetUserUsername");
                 });
 
             modelBuilder.Entity("Shackmeets.Models.Rsvp", b =>

@@ -71,7 +71,7 @@ namespace Shackmeets.Controllers
           this.dbContext.Add(rsvp);
         }
 
-        rsvp.RsvpTypeId = rsvpDto.RsvpTypeId;
+        rsvp.RsvpType = rsvpDto.RsvpType;
         rsvp.NumAttendees = rsvpDto.NumAttendees;
 
         // Validate fields

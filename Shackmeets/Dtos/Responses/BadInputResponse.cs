@@ -4,7 +4,7 @@ namespace Shackmeets.Dtos
 {
   public class BadInputResponse
   {
-    public string Result { get; private set; };
+    public string Result { get; private set; }
     public string Message { get; private set; }
 
     public BadInputResponse()

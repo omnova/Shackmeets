@@ -16,7 +16,7 @@ namespace Shackmeets.Migrations
                     LocationLatitude = table.Column<decimal>(nullable: false),
                     LocationLongitude = table.Column<decimal>(nullable: false),
                     MaxNotificationDistance = table.Column<int>(nullable: false),
-                    NotificationOptionId = table.Column<int>(nullable: false),
+                    NotificationOption = table.Column<int>(nullable: false),
                     NotifyByShackmessage = table.Column<bool>(nullable: false),
                     NotifyByEmail = table.Column<bool>(nullable: false),
                     NotificationEmail = table.Column<string>(nullable: true),
@@ -62,6 +62,39 @@ namespace Shackmeets.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notification",
+                columns: table => new
+                {
+                    NotificationId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    NotificationType = table.Column<int>(nullable: false),
+                    NotificationReason = table.Column<int>(nullable: false),
+                    MeetId = table.Column<int>(nullable: true),
+                    TargetUsername = table.Column<string>(nullable: true),
+                    MessageSubject = table.Column<string>(nullable: true),
+                    MessageBody = table.Column<string>(nullable: true),
+                    IsSent = table.Column<bool>(nullable: false),
+                    TimestampCreate = table.Column<DateTime>(nullable: false),
+                    TargetUserUsername = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notification", x => x.NotificationId);
+                    table.ForeignKey(
+                        name: "FK_Notification_Meets_MeetId",
+                        column: x => x.MeetId,
+                        principalTable: "Meets",
+                        principalColumn: "MeetId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Notification_Users_TargetUserUsername",
+                        column: x => x.TargetUserUsername,
+                        principalTable: "Users",
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rsvps",
                 columns: table => new
                 {
@@ -95,6 +128,16 @@ namespace Shackmeets.Migrations
                 column: "OrganizerUsername");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notification_MeetId",
+                table: "Notification",
+                column: "MeetId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_TargetUserUsername",
+                table: "Notification",
+                column: "TargetUserUsername");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rsvps_MeetId",
                 table: "Rsvps",
                 column: "MeetId");
@@ -107,6 +150,9 @@ namespace Shackmeets.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Notification");
+
             migrationBuilder.DropTable(
                 name: "Rsvps");
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shackmeets.Models
@@ -37,13 +36,13 @@ namespace Shackmeets.Models
     [NotMapped]
     public int InterestedCount
     {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 2).Sum(r => r.NumAttendees) : 0; }
+      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpType == RsvpType.Interested).Sum(r => r.NumAttendees) : 0; }
     }
 
     [NotMapped]
     public int GoingCount
     {
-      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpTypeId == 1).Sum(r => r.NumAttendees) : 0; }
+      get { return this.Rsvps != null ? this.Rsvps.Where(r => r.RsvpType == RsvpType.Going).Sum(r => r.NumAttendees) : 0; }
     }
 
     public Meet()
