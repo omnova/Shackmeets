@@ -61,7 +61,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"omnova\"\n}"
+					"raw": "{\n    \"username\": \"{{username}}\",\n    \"notificationOption\": 1\n}"
 				},
 				"url": {
 					"raw": "{{baseuri}}/api/UpdatePreferences",
@@ -155,7 +155,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"MYSHACKMEET\",\n    \"description\": \"DESC\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"2018-09-14T00:00:00\",\n    \"locationName\": \"Somewhere\",\n    \"locationAddress\": \"101 Someplace Ave\",\n    \"locationState\": 23425,\n    \"locationCountry\": \"USA!USA!\",\n    \"locationLatitude\": 3,\n    \"locationLongitude\": 6\n}"
+					"raw": "{\n    \"name\": \"MYSHACKMEET\",\n    \"description\": \"DESC\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"2018-09-19T00:00:00\",\n    \"locationName\": \"Somewhere\",\n    \"locationAddress\": \"Stonebriar Mall\"\n}"
 				},
 				"url": {
 					"raw": "{{baseuri}}/api/CreateShackmeet",
@@ -186,7 +186,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"meetId\": 1,\n    \"name\": \"NEW NAME BITCHES\",\n    \"description\": \"DESCRIPTION WOOOOOOO\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"2018-09-14T00:00:00\",\n    \"locationName\": \"Somewhere\",\n    \"locationAddress\": \"101 Someplace Ave\",\n    \"locationState\": 23425,\n    \"locationCountry\": \"USA!USA!\",\n    \"locationLatitude\": 3,\n    \"locationLongitude\": 6\n}"
+					"raw": "{\n\t\"meetId\": 1,\n    \"name\": \"NEW NAME BITCHES\",\n    \"description\": \"DESCRIPTION WOOOOOOO\",\n    \"organizerUsername\": \"{{username}}\",\n    \"eventDate\": \"01/01/2019\",\n    \"locationName\": \"Cool place\",\n    \"locationAddress\": \"Iceland\"\n}"
 				},
 				"url": {
 					"raw": "{{baseuri}}/api/UpdateShackmeet",
@@ -248,7 +248,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"meetId\": 1,\n\t\"username\": \"{{username}}\",\n\t\"rsvpTypeId\": 2,\n\t\"numAttendees\": 3\n}"
+					"raw": "{\n\t\"meetId\": 1,\n\t\"username\": \"{{username}}\",\n\t\"rsvpType\": 2,\n\t\"numAttendees\": 3\n}"
 				},
 				"url": {
 					"raw": "{{baseuri}}/api/Rsvp",
