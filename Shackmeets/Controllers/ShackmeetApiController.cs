@@ -244,7 +244,7 @@ namespace Shackmeets.Controllers
 
         // Send new shackmeet notifications
 
-        return Ok(new SuccessResponse());
+        return Ok(new InsertSuccessResponse(meet.MeetId));
       }
       catch (Exception e)
       {
