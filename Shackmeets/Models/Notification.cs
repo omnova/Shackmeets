@@ -8,7 +8,7 @@ namespace Shackmeets.Models
     Email = 2
   }
 
-  public enum NotificatoinReason
+  public enum NotificationReason
   {
     ShackmeetAnnouncement = 1,
     ShackmeetReminder = 2,
@@ -21,7 +21,7 @@ namespace Shackmeets.Models
     public int NotificationId { get; set; }
 
     public NotificationType NotificationType { get; set; }
-    public NotificatoinReason NotificationReason { get; set; }
+    public NotificationReason NotificationReason { get; set; }
     
     public int? MeetId { get; set; }
 

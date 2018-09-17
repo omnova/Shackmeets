@@ -102,7 +102,7 @@ namespace Shackmeets.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     MeetId = table.Column<int>(nullable: false),
                     Username = table.Column<string>(nullable: true),
-                    RsvpTypeId = table.Column<int>(nullable: false),
+                    RsvpType = table.Column<int>(nullable: false),
                     NumAttendees = table.Column<int>(nullable: false)
                 },
                 constraints: table =>

@@ -105,7 +105,7 @@ namespace Shackmeets.Migrations
 
                     b.Property<int>("NumAttendees");
 
-                    b.Property<int>("RsvpTypeId");
+                    b.Property<int>("RsvpType");
 
                     b.Property<string>("Username");
 

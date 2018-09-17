@@ -10,7 +10,7 @@ using Shackmeets.Models;
 namespace Shackmeets.Migrations
 {
     [DbContext(typeof(ShackmeetsDbContext))]
-    [Migration("20180917012214_InitialCreate")]
+    [Migration("20180917020813_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -107,7 +107,7 @@ namespace Shackmeets.Migrations
 
                     b.Property<int>("NumAttendees");
 
-                    b.Property<int>("RsvpTypeId");
+                    b.Property<int>("RsvpType");
 
                     b.Property<string>("Username");
 

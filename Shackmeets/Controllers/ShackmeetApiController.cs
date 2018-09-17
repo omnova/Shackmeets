@@ -11,6 +11,7 @@ using Shackmeets.Dtos;
 using Microsoft.Extensions.Logging;
 using Shackmeets.Services;
 using Shackmeets.Validators;
+using Microsoft.Extensions.Options;
 
 namespace Shackmeets.Controllers
 {
@@ -19,12 +20,16 @@ namespace Shackmeets.Controllers
   {
     private readonly ShackmeetsDbContext dbContext;
     private readonly ILogger logger;
+    private readonly AppSettings appSettings;
+    private readonly IChattyService chattyService;
     private readonly IGoogleMapsService googleMapsService;
 
-    public ShackmeetApiController(ShackmeetsDbContext context, ILogger<ShackmeetApiController> logger, IGoogleMapsService googleMapsService)
+    public ShackmeetApiController(ShackmeetsDbContext context, ILogger<ShackmeetApiController> logger, IOptions<AppSettings> appSettings, IChattyService chattyService, IGoogleMapsService googleMapsService)
     {
       this.dbContext = context;
       this.logger = logger;
+      this.appSettings = appSettings.Value;
+      this.chattyService = chattyService;
       this.googleMapsService = googleMapsService;
     }
 
@@ -200,7 +205,6 @@ namespace Shackmeets.Controllers
           return BadRequest(new ErrorResponse("Slow your rolls."));
         }
 
-
         // Get additional address info (and verify address)
         var addressInfo = this.googleMapsService.GetAddressInfo(meetDto.LocationAddress);
       
@@ -265,9 +269,15 @@ namespace Shackmeets.Controllers
           return BadRequest(new BadInputResponse());
         }
 
+        // Load meet with related RSVPs and users (for use with notifications)
+        var meet = this.dbContext
+          .Meets
+          .Where(m => m.MeetId == meetDto.MeetId)
+          .Include(m => m.Rsvps)
+          .ThenInclude(r => r.User)
+          .SingleOrDefault(m => m.MeetId == meetDto.MeetId);
+        
         // Verify meet exists
-        var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
-
         if (meet == null)
         {
           return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
@@ -335,8 +345,15 @@ namespace Shackmeets.Controllers
           return BadRequest(new BadInputResponse());
         }
 
-        var meet = this.dbContext.Meets.SingleOrDefault(m => m.MeetId == meetDto.MeetId);
+        // Load meet with related RSVPs and users (for use with notifications)
+        var meet = this.dbContext
+          .Meets
+          .Where(m => m.MeetId == meetDto.MeetId)
+          .Include(m => m.Rsvps)
+          .ThenInclude(r => r.User)
+          .SingleOrDefault(m => m.MeetId == meetDto.MeetId);
 
+        // Verify meet exists
         if (meet == null)
         {
           return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
@@ -350,6 +367,7 @@ namespace Shackmeets.Controllers
         this.dbContext.SaveChanges();
 
         // Send cancellation notifications
+        //var users = meet.Rsvps.Where()
 
         return Ok(new SuccessResponse());
       }
@@ -395,7 +413,15 @@ namespace Shackmeets.Controllers
         this.dbContext.SaveChanges();
 
         // Send cancellation notifications
-        
+        var usersToShackmessage = meet.Rsvps.Where(r => r.User.NotifyByShackmessage).ToList();
+        var usersToEmail = meet.Rsvps.Where(r => r.User.NotifyByEmail).ToList();
+
+        var notificationHelper = new NotificationHelper(this.appSettings, this.chattyService);
+
+        //foreach (var user in usersToShackmessage)
+        //{
+        //  notificationHelper.SendShackMessage(user, )
+        //}
 
         return Ok(new SuccessResponse());
       }
