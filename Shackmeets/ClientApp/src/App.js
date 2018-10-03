@@ -1,28 +1,20 @@
-﻿import React from 'react';
+import React, { Component } from 'react';
 import { Route } from 'react-router';
+import { Layout } from './components/Layout';
+import { Home } from './components/Home';
+import { FetchData } from './components/FetchData';
+import { Counter } from './components/Counter';
 
-// Components
-import Layout from './components/Layout';
+export default class App extends Component {
+  displayName = App.name
 
-import Home from './components/Home';
-import Login from './components/Login';
-import Listing from './components/Listing';
-import Archive from './components/Archive';
-import CreateShackmeet from './components/CreateShackmeet';
-import EditShackmeet from './components/EditShackmeet';
-import ViewShackmeet from './components/ViewShackmeet';
-
-import FetchData from './components/FetchData';
-
-export default () => (
-  <Layout>
-    <Route exact path='/' component={Home} />
-    <Route path='/listing' component={Listing} />
-    <Route path='/archive' component={Archive} />
-    <Route path='/create' component={CreateShackmeet} />
-    <Route path='/edit' component={EditShackmeet} />
-    <Route path='/view' component={ViewShackmeet} />
-    <Route path='/fetchdata/:startDateIndex?' component={FetchData} />
-    <Route path='/login' component={Login} />
-  </Layout>
-);
+  render() {
+    return (
+      <Layout>
+        <Route exact path='/' component={Home} />
+        <Route path='/counter' component={Counter} />
+        <Route path='/fetchdata' component={FetchData} />
+      </Layout>
+    );
+  }
+}

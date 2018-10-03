@@ -22,7 +22,7 @@ namespace Shackmeets
 
     public void SendEmail(string to, string subject, string body)
     {
-      var client = new SmtpClient("smtp.domain.com");
+      var client = new SmtpClient("smtp.shackmeets.com");
 
       client.UseDefaultCredentials = true;
       //client.Credentials = new NetworkCredential("username", "password");
