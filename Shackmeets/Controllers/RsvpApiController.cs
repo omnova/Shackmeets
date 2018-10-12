@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Shackmeets.Models;
 using Shackmeets.Dtos;
 using Shackmeets.Validators;
+using System.Security.Claims;
 
 namespace Shackmeets.Controllers
 {
@@ -36,13 +37,8 @@ namespace Shackmeets.Controllers
           return BadRequest(new BadInputResponse());
         }
 
-        // Verify user exists
-        bool userExists = this.dbContext.Users.Any(u => u.Username == rsvpDto.Username);
-
-        if (!userExists)
-        {
-          return BadRequest(new ErrorResponse("Username or password is incorrect."));
-        }
+        // Use the username of the authenticated user so they can only update their own RSVPs.
+        var currentUsername = this.User.FindFirst(ClaimTypes.Name).Value;
 
         // Verify meet exists
         bool meetExists = this.dbContext.Meets.Any(m => m.MeetId == rsvpDto.MeetId);
@@ -52,7 +48,7 @@ namespace Shackmeets.Controllers
           return BadRequest(new ErrorResponse("Shackmeet does not exist."));
         }
 
-        var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == rsvpDto.Username);
+        var rsvp = this.dbContext.Rsvps.SingleOrDefault(r => r.MeetId == rsvpDto.MeetId && r.Username == currentUsername);
 
         if (rsvp != null)
         {
@@ -65,7 +61,7 @@ namespace Shackmeets.Controllers
           rsvp = new Rsvp
           {
             MeetId = rsvpDto.MeetId,
-            Username = rsvpDto.Username
+            Username = currentUsername
           };
 
           this.dbContext.Add(rsvp);

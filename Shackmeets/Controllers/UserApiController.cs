@@ -115,8 +115,11 @@ namespace Shackmeets.Controllers
           return BadRequest(new BadInputResponse());
         }
 
+        // Use the username of the authenticated user so they can only update their own preferences.
+        var currentUsername = this.User.FindFirst(ClaimTypes.Name).Value;
+
         // Verify user exists
-        var user = this.dbContext.Users.FirstOrDefault(u => u.Username == userDto.Username);
+        var user = this.dbContext.Users.FirstOrDefault(u => u.Username == currentUsername);
 
         if (user == null)
         {

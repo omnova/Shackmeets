@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Shackmeets.Services;
 using Shackmeets.Validators;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace Shackmeets.Controllers
 {
@@ -50,7 +51,7 @@ namespace Shackmeets.Controllers
 
         // Had to split this because RSVPs weren't being included for some reason
         var meetListings = meets
-          .Select(m => new MeetListingDto
+          .Select(m => new MeetDto
           {
             MeetId = m.MeetId,
             Name = m.Name,
@@ -63,9 +64,13 @@ namespace Shackmeets.Controllers
             LocationCountry = m.LocationCountry,
             LocationLatitude = m.LocationLatitude,
             LocationLongitude = m.LocationLongitude,
-            IsCancelled = m.IsCancelled,
-            GoingCount = m.GoingCount,
-            InterestedCount = m.InterestedCount
+            Rsvps = m.Rsvps.Select(r => new RsvpDto
+            {
+              Username = r.Username,
+              MeetId = r.MeetId,
+              RsvpType = r.RsvpType,
+              NumAttendees = r.NumAttendees
+            }).ToList()
           })
           .ToList();
 
@@ -283,6 +288,14 @@ namespace Shackmeets.Controllers
           return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
         }
 
+        // Use the username of the authenticated user so they can only mess with their own shackmeets.
+        var currentUsername = this.User.FindFirst(ClaimTypes.Name).Value;
+
+        if (meet.OrganizerUsername != currentUsername)
+        {
+          return BadRequest(new ErrorResponse("Only the organizer can update a shackmeet."));
+        }
+
         // Get additional address info (and verify address)
         var addressInfo = this.googleMapsService.GetAddressInfo(meetDto.LocationAddress);
 
@@ -359,6 +372,14 @@ namespace Shackmeets.Controllers
           return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
         }
 
+        // Use the username of the authenticated user so they can only mess with their own shackmeets.
+        var currentUsername = this.User.FindFirst(ClaimTypes.Name).Value;
+
+        if (meet.OrganizerUsername != currentUsername)
+        {
+          return BadRequest(new ErrorResponse("Only the organizer can cancel a shackmeet."));
+        }
+
         this.dbContext.Meets.Attach(meet);
 
         // Update meet
@@ -398,6 +419,14 @@ namespace Shackmeets.Controllers
         if (meet == null)
         {
           return BadRequest(new ValidationErrorResponse("meetId", "Shackmeet does not exist."));
+        }
+
+        // Use the username of the authenticated user so they can only mess with their own shackmeets.
+        var currentUsername = this.User.FindFirst(ClaimTypes.Name).Value;
+
+        if (meet.OrganizerUsername != currentUsername)
+        {
+          return BadRequest(new ErrorResponse("Only the organizer can resend notifications."));
         }
 
         if (meet.LastAnnouncementPostDate.HasValue && meet.LastAnnouncementPostDate.Value.AddHours(18) < DateTime.Now)
