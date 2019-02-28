@@ -1,10 +1,10 @@
-﻿import React, { Component } from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { Glyphicon, Nav, Navbar, NavItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import './NavMenu.css';
 
-export class NavMenu extends Component {
+class NavMenu extends React.Component {
   displayName = NavMenu.name
 
   render() {
@@ -23,19 +23,21 @@ export class NavMenu extends Component {
                 <Glyphicon glyph='home' /> Home
               </NavItem>
             </LinkContainer>
-            <LinkContainer to={'/counter'}>
+            <LinkContainer to={'/archive'}>
               <NavItem>
-                <Glyphicon glyph='education' /> Counter
+                <Glyphicon glyph='th-list' /> Archive
               </NavItem>
             </LinkContainer>
-            <LinkContainer to={'/fetchdata'}>
+            <LinkContainer to={'/login'}>
               <NavItem>
-                <Glyphicon glyph='th-list' /> Fetch data
+                <Glyphicon glyph='th-list' /> Login
               </NavItem>
-            </LinkContainer>
+            </LinkContainer>       
           </Nav>
         </Navbar.Collapse>
       </Navbar>
     );
   }
 }
+
+export default NavMenu;

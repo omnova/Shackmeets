@@ -132,7 +132,7 @@ namespace Shackmeets.Controllers
       }
     }
 
-    [HttpGet("[action]")]
+    [HttpGet("[action]/{meetId:int}")]
     public IActionResult GetShackmeet(int meetId)
     {
       try
